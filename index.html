@@ -1,0 +1,1381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Procurement Command Center · Global Procurement & Supply Chain</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy-950:#0b1524;--navy-900:#0f1d31;--navy-800:#15263f;--navy-700:#1d3354;--navy-600:#2a4670;
+  --ink:#14213a;--text:#334155;--muted:#64748b;--faint:#94a3b8;
+  --line:#e5e9f0;--line-soft:#eef1f6;--bg:#f3f5f9;--card:#ffffff;
+  --green:#2e6b4e;--green-2:#3f8a66;--green-soft:#e7f1eb;
+  --amber:#b7791f;--amber-soft:#fbf2e1;
+  --coral:#c4553f;--coral-soft:#fbe9e5;
+  --blue:#35598a;--blue-soft:#e8eef7;
+  --plum:#6b5a8e;--plum-soft:#f1ecf6;
+  --gold:#b08d57;
+  --shadow-sm:0 1px 2px rgba(15,29,49,.05);
+  --shadow:0 1px 2px rgba(15,29,49,.04),0 6px 18px rgba(15,29,49,.05);
+  --radius:14px;
+  --serif:'Source Serif 4',Georgia,'Times New Roman',serif;
+  --sans:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button,select,input{font:inherit;color:inherit}
+.ic{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+
+/* ---------- Sidebar ---------- */
+.sidebar{position:fixed;inset:0 auto 0 0;width:252px;background:linear-gradient(180deg,var(--navy-900),var(--navy-950));color:#c9d3e1;display:flex;flex-direction:column;z-index:50;transition:transform .25s ease}
+.brand{display:flex;align-items:center;gap:12px;padding:22px 22px 20px;border-bottom:1px solid rgba(255,255,255,.06)}
+.brand-mark{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--gold),#8c6a3c);color:#fff;display:grid;place-items:center;font-family:var(--serif);font-weight:600;font-size:16px;letter-spacing:.5px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.15)}
+.brand-name{font-family:var(--serif);color:#fff;font-size:16px;font-weight:600;line-height:1.2}
+.brand-sub{font-size:10.5px;color:#8a9ab3;letter-spacing:.1em;text-transform:uppercase;margin-top:3px}
+.nav{padding:8px 12px 18px;flex:1;overflow-y:auto}
+.nav-label{font-size:10.5px;text-transform:uppercase;letter-spacing:.12em;color:#6c7d97;padding:16px 12px 8px}
+.nav-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:9px;color:#b4c0d2;cursor:pointer;font-weight:500;font-size:13.5px;position:relative;transition:background .15s,color .15s;border:0;background:none;width:100%;text-align:left}
+.nav-item:hover{background:rgba(255,255,255,.05);color:#fff}
+.nav-item.active{background:rgba(176,141,87,.14);color:#fff}
+.nav-item.active::before{content:'';position:absolute;left:-12px;top:8px;bottom:8px;width:3px;border-radius:0 3px 3px 0;background:var(--gold)}
+.nav-badge{margin-left:auto;background:var(--coral);color:#fff;font-size:10.5px;font-weight:600;padding:1px 7px;border-radius:20px;min-width:22px;text-align:center}
+.sidebar-foot{padding:16px;border-top:1px solid rgba(255,255,255,.06)}
+.sync-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:12px 14px;font-size:12px}
+.sync-row{display:flex;align-items:center;gap:8px;color:#fff;font-weight:500}
+.live-dot{width:8px;height:8px;border-radius:50%;background:#4fb286;animation:pulse 2s infinite}
+.live-dot.paused{background:#8a9ab3;animation:none}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(79,178,134,.55)}70%{box-shadow:0 0 0 8px rgba(79,178,134,0)}100%{box-shadow:0 0 0 0 rgba(79,178,134,0)}}
+.sync-meta{color:#8a9ab3;margin-top:4px}
+.sync-toggle{margin-top:10px;width:100%;padding:7px;border-radius:7px;border:1px solid rgba(255,255,255,.12);background:transparent;color:#c9d3e1;cursor:pointer;font-size:12px;transition:background .15s}
+.sync-toggle:hover{background:rgba(255,255,255,.07)}
+.overlay{position:fixed;inset:0;background:rgba(11,21,36,.45);z-index:45;display:none}
+
+/* ---------- Topbar ---------- */
+.main{margin-left:252px;min-height:100vh}
+.topbar{position:sticky;top:0;z-index:40;height:66px;background:rgba(255,255,255,.9);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:14px;padding:0 28px}
+.icon-btn{width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:#fff;display:grid;place-items:center;cursor:pointer;color:var(--text);position:relative;transition:border-color .15s,background .15s;flex-shrink:0}
+.icon-btn:hover{border-color:#cbd3df;background:var(--line-soft)}
+.icon-btn .dot{position:absolute;top:7px;right:8px;width:8px;height:8px;border-radius:50%;background:var(--coral);border:2px solid #fff}
+.menu-btn{display:none}
+.breadcrumb{font-size:12.5px;color:var(--muted);white-space:nowrap}
+.breadcrumb b{color:var(--ink);font-weight:600}
+.top-search{margin-left:auto;display:flex;align-items:center;gap:8px;background:var(--line-soft);border:1px solid transparent;border-radius:10px;padding:0 12px;height:38px;width:320px;color:var(--muted);transition:.15s}
+.top-search:focus-within{background:#fff;border-color:#cbd3df;box-shadow:0 0 0 3px rgba(42,70,112,.08)}
+.top-search input{border:0;background:transparent;outline:0;flex:1;font-size:13px;color:var(--ink);min-width:0}
+.kbd{font-size:11px;border:1px solid var(--line);border-radius:5px;padding:0 6px;background:#fff;color:var(--faint)}
+.profile{position:relative}
+.profile-btn{display:flex;align-items:center;gap:10px;padding:4px 10px 4px 4px;border-radius:12px;border:1px solid transparent;background:none;cursor:pointer}
+.profile-btn:hover{background:var(--line-soft)}
+.avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--navy-700),var(--navy-600));color:#fff;display:grid;place-items:center;font-weight:600;font-size:13px;box-shadow:0 0 0 2px #fff,0 0 0 3px var(--gold)}
+.profile-name{font-size:13px;font-weight:600;color:var(--ink);line-height:1.2;text-align:left}
+.profile-role{font-size:11.5px;color:var(--muted);text-align:left}
+.dropdown{position:absolute;right:0;top:calc(100% + 8px);background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 14px 34px rgba(15,29,49,.14);min-width:220px;padding:6px;display:none}
+.dropdown.open{display:block;animation:slideIn .18s ease}
+.dropdown .dd-head{padding:10px;border-bottom:1px solid var(--line);margin-bottom:6px}
+.dropdown .dd-head b{display:block;color:var(--ink);font-size:13px}
+.dropdown .dd-head span{font-size:12px;color:var(--muted)}
+.dropdown button{display:flex;gap:10px;align-items:center;padding:9px 10px;border-radius:8px;color:var(--text);font-size:13px;cursor:pointer;border:0;background:none;width:100%;text-align:left}
+.dropdown button:hover{background:var(--line-soft)}
+.dropdown hr{border:0;border-top:1px solid var(--line);margin:6px 0}
+
+/* ---------- Content ---------- */
+.content{padding:26px 28px 40px;max-width:1640px;margin:0 auto}
+section,[data-section]{scroll-margin-top:84px}
+.page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:22px}
+.eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);font-weight:600}
+h1{font-family:var(--serif);font-weight:600;font-size:28px;color:var(--ink);letter-spacing:-.01em;margin-top:4px;line-height:1.2}
+.page-sub{color:var(--muted);font-size:13.5px;margin-top:4px}
+.filters{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:10.5px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.07em}
+.select{appearance:none;-webkit-appearance:none;height:38px;border:1px solid var(--line);background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 11px center;border-radius:10px;padding:0 34px 0 12px;min-width:170px;cursor:pointer;font-size:13px;color:var(--ink);box-shadow:var(--shadow-sm);transition:border-color .15s}
+.select:hover{border-color:#cbd3df}
+.select:focus,.input:focus{outline:0;border-color:var(--navy-600);box-shadow:0 0 0 3px rgba(42,70,112,.12)}
+.select.sm{min-width:140px}
+.btn{height:38px;padding:0 14px;border-radius:10px;border:1px solid var(--line);background:#fff;display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:500;color:var(--ink);box-shadow:var(--shadow-sm);transition:.15s;white-space:nowrap}
+.btn:hover{border-color:#cbd3df;background:var(--line-soft)}
+.btn-primary{background:var(--navy-800);border-color:var(--navy-800);color:#fff}
+.btn-primary:hover{background:var(--navy-700);border-color:var(--navy-700)}
+.btn .ic{width:16px;height:16px}
+.btn-ghost{box-shadow:none;height:30px;padding:0 10px;font-size:12px}
+.segmented{display:inline-flex;background:#fff;border:1px solid var(--line);border-radius:10px;padding:3px;height:38px;box-shadow:var(--shadow-sm)}
+.segmented button{border:0;background:none;padding:0 12px;border-radius:7px;font-size:12.5px;font-weight:500;color:var(--muted);cursor:pointer;transition:.15s}
+.segmented button:hover{color:var(--ink)}
+.segmented button.active{background:var(--navy-800);color:#fff}
+.segmented.sm{height:30px;padding:2px}
+.segmented.sm button{font-size:12px;padding:0 10px}
+.spin{animation:spin .7s linear}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ---------- KPI ---------- */
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px;margin-bottom:18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.kpi{padding:18px 20px 12px;position:relative;overflow:hidden;transition:transform .2s,box-shadow .2s}
+.kpi:hover{transform:translateY(-2px);box-shadow:0 2px 4px rgba(15,29,49,.04),0 12px 26px rgba(15,29,49,.08)}
+.kpi-top{display:flex;align-items:center;justify-content:space-between}
+.kpi-label{font-size:12.5px;color:var(--muted);font-weight:500}
+.kpi-icon{width:34px;height:34px;border-radius:9px;display:grid;place-items:center}
+.kpi-icon .ic{width:17px;height:17px}
+.tone-navy{background:var(--blue-soft);color:var(--blue)}
+.tone-green{background:var(--green-soft);color:var(--green)}
+.tone-amber{background:var(--amber-soft);color:var(--amber)}
+.tone-coral{background:var(--coral-soft);color:var(--coral)}
+.kpi-value{font-family:var(--serif);font-size:30px;font-weight:600;color:var(--ink);margin-top:6px;letter-spacing:-.01em;line-height:1.15;font-variant-numeric:tabular-nums}
+.kpi-value small{font-family:var(--sans);font-size:13px;color:var(--muted);font-weight:500;margin-left:4px}
+.kpi-foot{display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap}
+.delta{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:600;padding:2px 8px;border-radius:20px;white-space:nowrap}
+.delta.good{background:var(--green-soft);color:var(--green)}
+.delta.bad{background:var(--coral-soft);color:var(--coral)}
+.delta.warn{background:var(--amber-soft);color:var(--amber)}
+.delta.neutral{background:var(--blue-soft);color:var(--blue)}
+.kpi-note{font-size:11.5px;color:var(--faint)}
+.spark{width:100%;height:38px;margin-top:10px;display:block}
+
+/* ---------- Grid & panels ---------- */
+.grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:18px}
+.span-8{grid-column:span 8}.span-4{grid-column:span 4}.span-7{grid-column:span 7}.span-5{grid-column:span 5}.span-12{grid-column:span 12}
+.panel{padding:20px 22px;display:flex;flex-direction:column;min-width:0}
+.panel-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.panel-title{font-family:var(--serif);font-size:17px;font-weight:600;color:var(--ink);display:flex;align-items:center;gap:8px}
+.panel-sub{font-size:12.5px;color:var(--muted);margin-top:2px}
+.count-pill{font-family:var(--sans);font-size:11px;font-weight:600;background:var(--coral-soft);color:var(--coral);padding:1px 8px;border-radius:20px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted);align-items:center}
+.legend span,.legend button{display:inline-flex;align-items:center;gap:6px}
+.legend button{border:0;background:none;cursor:pointer;color:var(--muted);font-size:12px;padding:2px 4px;border-radius:5px;transition:opacity .15s}
+.legend button:hover{color:var(--ink)}
+.legend button.off{opacity:.38;text-decoration:line-through}
+.swatch{width:10px;height:10px;border-radius:3px;display:inline-block;flex-shrink:0}
+.swatch.line{height:3px;width:14px;border-radius:2px}
+.swatch.dash{height:0;width:14px;border-top:2px dashed var(--gold);border-radius:0}
+.chart{width:100%;position:relative}
+.chart svg{display:block;overflow:visible}
+.axis-text{font-size:11px;fill:var(--faint);font-family:var(--sans)}
+.stat-row{display:flex;gap:28px;margin-bottom:12px;flex-wrap:wrap;padding-bottom:12px;border-bottom:1px dashed var(--line)}
+.stat .l{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;font-weight:600}
+.stat .v{font-size:17px;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums}
+.pos{color:var(--coral)!important}.neg{color:var(--green)!important}
+.bar-grow{transform-box:fill-box;transform-origin:bottom;animation:grow .6s cubic-bezier(.2,.8,.2,1) both}
+@keyframes grow{from{transform:scaleY(0)}}
+.draw{stroke-dasharray:2400;stroke-dashoffset:2400;animation:draw 1.1s ease forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+
+/* Lead time bars */
+.lt-list{display:flex;flex-direction:column;gap:12px;margin-top:4px}
+.lt-row{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,2fr) 58px;align-items:center;gap:12px;font-size:12.5px}
+.lt-name{color:var(--ink);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lt-name small{display:block;color:var(--faint);font-weight:400;font-size:11px}
+.lt-track{height:10px;background:var(--line-soft);border-radius:6px;position:relative}
+.lt-fill{height:100%;border-radius:6px;width:0;transition:width .75s cubic-bezier(.2,.8,.2,1)}
+.lt-target{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--navy-800);border-radius:2px;opacity:.55}
+.lt-val{text-align:right;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums}
+.lt-val small{font-weight:400;color:var(--faint)}
+.lt-legend{display:flex;gap:14px;font-size:11.5px;color:var(--muted);margin-top:16px;padding-top:12px;border-top:1px dashed var(--line);flex-wrap:wrap}
+
+/* Price table */
+.mini-table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:14px}
+.mini-table th{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:600;text-align:left;padding:8px 6px;border-bottom:1px solid var(--line)}
+.mini-table td{padding:9px 6px;border-bottom:1px solid var(--line-soft);font-variant-numeric:tabular-nums}
+.mini-table tr:last-child td{border-bottom:0}
+.mini-table .num{text-align:right}
+.mat{display:flex;align-items:center;gap:8px;color:var(--ink);font-weight:500}
+
+/* Donut */
+.donut-wrap{display:flex;align-items:center;gap:18px;flex-wrap:wrap;justify-content:center;flex:1}
+.donut-legend{flex:1;display:flex;flex-direction:column;gap:4px;min-width:170px}
+.dl-item{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:8px;cursor:pointer;font-size:12.5px;border:1px solid transparent;background:none;text-align:left;width:100%;transition:.15s}
+.dl-item:hover{background:var(--line-soft)}
+.dl-item.active{border-color:#d6dce6;background:var(--line-soft)}
+.dl-item b{margin-left:auto;color:var(--ink);font-variant-numeric:tabular-nums}
+.dl-item em{font-style:normal;color:var(--faint);width:38px;text-align:right;font-size:11.5px}
+.donut-seg{transition:opacity .15s;cursor:pointer}
+.donut-seg:hover{opacity:.8}
+.hint{font-size:11.5px;color:var(--faint);margin-top:10px;text-align:center}
+
+/* Table */
+.table-tools{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.input-wrap{position:relative}
+.input-wrap .ic{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--faint);width:16px;height:16px;pointer-events:none}
+.input{height:38px;border:1px solid var(--line);border-radius:10px;padding:0 12px 0 34px;width:250px;font-size:13px;background:#fff;box-shadow:var(--shadow-sm);color:var(--ink)}
+.table-wrap{overflow-x:auto;margin:0 -22px;border-top:1px solid var(--line)}
+table.data{width:100%;border-collapse:collapse;font-size:13px;min-width:1040px}
+table.data th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:600;padding:11px 14px;background:#fafbfd;border-bottom:1px solid var(--line);white-space:nowrap;cursor:pointer;user-select:none}
+table.data th:hover{color:var(--ink)}
+table.data th:first-child,table.data td:first-child{padding-left:22px}
+table.data th:last-child,table.data td:last-child{padding-right:22px}
+table.data th .sort{opacity:.35;margin-left:5px;font-size:9px}
+table.data th.sorted{color:var(--navy-700)}
+table.data th.sorted .sort{opacity:1}
+table.data td{padding:12px 14px;border-bottom:1px solid var(--line-soft);white-space:nowrap;color:var(--text);vertical-align:middle}
+table.data tbody tr{transition:background .2s}
+table.data tbody tr:hover{background:#f8fafc}
+table.data .num{text-align:right;font-variant-numeric:tabular-nums}
+tr.flash{animation:flash 2.4s ease}
+@keyframes flash{0%,30%{background:#fcf1d8}100%{background:transparent}}
+.po-id{font-weight:600;color:var(--navy-700);font-variant-numeric:tabular-nums}
+.sup{color:var(--ink);font-weight:500}
+.sub-text{font-size:11.5px;color:var(--faint);display:block}
+.region-tag{font-size:11px;font-weight:600;color:var(--navy-700);background:var(--line-soft);border:1px solid var(--line);padding:2px 7px;border-radius:6px}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:20px;font-size:11.5px;font-weight:600}
+.badge::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor}
+.b-delayed{background:var(--coral-soft);color:var(--coral)}
+.b-risk{background:var(--amber-soft);color:var(--amber)}
+.b-transit{background:var(--blue-soft);color:var(--blue)}
+.b-open{background:#eef0f4;color:#556377}
+.b-hold{background:var(--plum-soft);color:var(--plum)}
+.b-delivered{background:var(--green-soft);color:var(--green)}
+.risk{display:flex;align-items:center;gap:8px;min-width:120px}
+.risk-bar{flex:1;height:6px;background:var(--line-soft);border-radius:4px;overflow:hidden}
+.risk-bar i{display:block;height:100%;border-radius:4px}
+.risk b{font-size:12px;width:24px;text-align:right;font-variant-numeric:tabular-nums;color:var(--ink)}
+.delay-pos{color:var(--coral);font-weight:600}
+.delay-zero{color:var(--faint)}
+.table-foot{display:flex;justify-content:space-between;align-items:center;padding-top:14px;font-size:12.5px;color:var(--muted);flex-wrap:wrap;gap:10px}
+.pager{display:flex;gap:6px;flex-wrap:wrap}
+.pager button{min-width:32px;height:32px;padding:0 8px;border-radius:8px;border:1px solid var(--line);background:#fff;cursor:pointer;font-size:12.5px;transition:.15s}
+.pager button:hover:not(:disabled){background:var(--line-soft)}
+.pager button.active{background:var(--navy-800);color:#fff;border-color:var(--navy-800)}
+.pager button:disabled{opacity:.4;cursor:default}
+.empty{text-align:center;padding:44px 20px;color:var(--muted)}
+
+/* Alerts */
+.alert-list{display:flex;flex-direction:column;gap:10px;overflow-y:auto;max-height:470px;padding-right:6px;margin-right:-6px}
+.alert-list::-webkit-scrollbar{width:6px}
+.alert-list::-webkit-scrollbar-thumb{background:#d7dde7;border-radius:6px}
+.alert{display:flex;gap:12px;padding:12px;border:1px solid var(--line);border-radius:11px;background:#fff;position:relative}
+.alert.enter{animation:slideIn .4s ease}
+@keyframes slideIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.alert.sev-high{border-left:3px solid var(--coral)}
+.alert.sev-med{border-left:3px solid var(--amber)}
+.alert.sev-low{border-left:3px solid var(--blue)}
+.alert-ic{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;flex-shrink:0}
+.alert-ic .ic{width:15px;height:15px}
+.sev-high .alert-ic{background:var(--coral-soft);color:var(--coral)}
+.sev-med .alert-ic{background:var(--amber-soft);color:var(--amber)}
+.sev-low .alert-ic{background:var(--blue-soft);color:var(--blue)}
+.alert-body{min-width:0}
+.alert-title{font-size:13px;font-weight:600;color:var(--ink);line-height:1.35;padding-right:20px}
+.alert-meta{font-size:12px;color:var(--muted);margin-top:2px}
+.alert-time{font-size:11px;color:var(--faint);margin-top:4px}
+.alert-x{position:absolute;top:8px;right:8px;border:0;background:none;color:var(--faint);cursor:pointer;padding:3px;border-radius:5px;display:grid;place-items:center}
+.alert-x .ic{width:14px;height:14px}
+.alert-x:hover{color:var(--ink);background:var(--line-soft)}
+.new-tag{font-size:9.5px;font-weight:700;color:#fff;background:var(--coral);padding:1px 6px;border-radius:10px;margin-left:6px;vertical-align:1px;letter-spacing:.04em}
+
+/* Tooltip & toast */
+.tooltip{position:fixed;left:0;top:0;pointer-events:none;background:var(--navy-900);color:#e6ebf3;padding:9px 12px;border-radius:9px;font-size:12px;box-shadow:0 10px 24px rgba(0,0,0,.22);opacity:0;transition:opacity .12s;z-index:100;min-width:150px}
+.tooltip .tt-title{font-weight:600;color:#fff;margin-bottom:5px}
+.tooltip .tt-row{display:flex;align-items:center;gap:14px;justify-content:space-between;line-height:1.7}
+.tooltip .tt-row span{display:flex;align-items:center;gap:6px;color:#aeb9ca}
+.tooltip .tt-row b{font-variant-numeric:tabular-nums}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--navy-900);color:#fff;padding:12px 16px;border-radius:10px;font-size:13px;box-shadow:0 12px 28px rgba(0,0,0,.22);transform:translateY(20px);opacity:0;transition:.25s;z-index:120;pointer-events:none;max-width:380px;display:flex;gap:10px;align-items:center;border-left:3px solid var(--gold)}
+.toast.show{transform:none;opacity:1}
+.footer{margin-top:28px;text-align:center;color:var(--faint);font-size:12px}
+
+@media (max-width:1280px){
+  .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .span-8,.span-4,.span-7,.span-5{grid-column:span 12}
+  .alert-list{max-height:380px}
+}
+@media (max-width:900px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:none}
+  .overlay.show{display:block}
+  .main{margin-left:0}
+  .menu-btn{display:grid}
+  .top-search{display:none}
+  .profile-text{display:none}
+  .breadcrumb{margin-right:auto}
+}
+@media (max-width:640px){
+  .kpis{grid-template-columns:1fr}
+  .content{padding:18px 14px 30px}
+  .topbar{padding:0 14px}
+  .breadcrumb{display:none}
+  h1{font-size:23px}
+  .filters,.table-tools{width:100%}
+  .field{flex:1 1 140px}
+  .select{min-width:0;width:100%}
+  .input-wrap{flex:1 1 100%}
+  .input{width:100%}
+  .lt-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 50px}
+  .panel{padding:18px 16px}
+  .table-wrap{margin:0 -16px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-mark">HL</div>
+      <div>
+        <div class="brand-name">Harbourline Brands</div>
+        <div class="brand-sub">Global Procurement</div>
+      </div>
+    </div>
+    <nav class="nav" id="nav">
+      <div class="nav-label">Dashboard</div>
+      <button class="nav-item active" data-target="top">
+        <svg class="ic" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Overview</button>
+      <button class="nav-item" data-target="spend">
+        <svg class="ic" viewBox="0 0 24 24"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="14 7 21 7 21 14"/></svg>Spend Analytics</button>
+      <button class="nav-item" data-target="prices">
+        <svg class="ic" viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>Price Intelligence</button>
+      <div class="nav-label">Operations</div>
+      <button class="nav-item" data-target="suppliers">
+        <svg class="ic" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Supplier Lead Times</button>
+      <button class="nav-item" data-target="inventory">
+        <svg class="ic" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>Inventory & Stockouts</button>
+      <button class="nav-item" data-target="alerts">
+        <svg class="ic" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Alerts<span class="nav-badge" id="navAlertBadge">0</span></button>
+      <button class="nav-item" data-target="orders">
+        <svg class="ic" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>Purchase Orders</button>
+      <div class="nav-label">Workspace</div>
+      <button class="nav-item" data-action="export">
+        <svg class="ic" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export PO Report</button>
+      <button class="nav-item" data-action="settings">
+        <svg class="ic" viewBox="0 0 24 24"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>Settings</button>
+    </nav>
+    <div class="sidebar-foot">
+      <div class="sync-card">
+        <div class="sync-row"><span class="live-dot" id="liveDot"></span><span id="liveLabel">Live PO feed active</span></div>
+        <div class="sync-meta" id="syncTime">Synced just now</div>
+        <button class="sync-toggle" id="liveToggle">Pause live updates</button>
+      </div>
+    </div>
+  </aside>
+  <div class="overlay" id="overlay"></div>
+
+  <!-- ============ MAIN ============ -->
+  <main class="main">
+    <header class="topbar">
+      <button class="icon-btn menu-btn" id="menuBtn" aria-label="Open menu">
+        <svg class="ic" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <div class="breadcrumb">Supply Chain &nbsp;/&nbsp; <b>Procurement Command Center</b></div>
+      <label class="top-search">
+        <svg class="ic" viewBox="0 0 24 24" style="width:16px;height:16px"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input id="topSearch" type="text" placeholder="Search POs, suppliers, items…" autocomplete="off">
+        <span class="kbd">/</span>
+      </label>
+      <button class="icon-btn" id="bellBtn" aria-label="Alerts">
+        <svg class="ic" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <span class="dot" id="bellDot"></span>
+      </button>
+      <div class="profile">
+        <button class="profile-btn" id="profileBtn">
+          <span class="avatar">EM</span>
+          <span class="profile-text">
+            <div class="profile-name">Elena Marsh</div>
+            <div class="profile-role">VP, Global Procurement</div>
+          </span>
+          <svg class="ic profile-text" viewBox="0 0 24 24" style="width:14px;height:14px;color:var(--muted)"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="dropdown" id="profileMenu">
+          <div class="dd-head"><b>Elena Marsh</b><span>elena.marsh@harbourline.com</span></div>
+          <button data-toast="Profile settings opened">
+            <svg class="ic" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>My Profile</button>
+          <button data-toast="Approval delegation: 3 pending requests">
+            <svg class="ic" viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Approvals & Delegation</button>
+          <button data-toast="Notification preferences saved">
+            <svg class="ic" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/></svg>Notification Preferences</button>
+          <hr>
+          <button data-toast="Sign-out is disabled in demo mode">
+            <svg class="ic" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Sign out</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="content">
+      <!-- Page head + filters -->
+      <section class="page-head" id="top">
+        <div>
+          <div class="eyebrow">Global Procurement & Supply Chain</div>
+          <h1>Procurement Command Center</h1>
+          <div class="page-sub" id="pageSub">All regions · All categories · Last 12 months</div>
+        </div>
+        <div class="filters">
+          <div class="field">
+            <label for="fRegion">Region</label>
+            <select class="select" id="fRegion">
+              <option value="all">All Regions</option>
+              <option>North America</option>
+              <option>APAC</option>
+              <option>EMEA</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="fCategory">Category</label>
+            <select class="select" id="fCategory">
+              <option value="all">All Categories</option>
+              <option>Packaging</option>
+              <option>Raw Ingredients</option>
+              <option>Logistics</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Period</label>
+            <div class="segmented" id="periodSeg">
+              <button data-p="3">3M</button><button data-p="6">6M</button><button data-p="12" class="active">12M</button>
+            </div>
+          </div>
+          <button class="btn" id="btnReset" title="Reset all filters">
+            <svg class="ic" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Reset</button>
+          <button class="btn btn-primary" id="btnRefresh">
+            <svg class="ic" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Refresh</button>
+        </div>
+      </section>
+
+      <!-- KPIs -->
+      <section class="kpis" id="kpis"></section>
+
+      <div class="grid">
+        <!-- Spend trend -->
+        <section class="card panel span-8" id="spend">
+          <div class="panel-head">
+            <div>
+              <div class="panel-title">Spend Trend — Actual vs Budget</div>
+              <div class="panel-sub">Monthly addressable spend, USD</div>
+            </div>
+            <div class="legend">
+              <span><i class="swatch line" style="background:var(--navy-700)"></i>Actual</span>
+              <span><i class="swatch dash"></i>Budget</span>
+            </div>
+          </div>
+          <div class="stat-row" id="spendStats"></div>
+          <div class="chart" id="spendChart"></div>
+        </section>
+
+        <!-- PO status donut -->
+        <section class="card panel span-4" id="poStatus">
+          <div class="panel-head">
+            <div>
+              <div class="panel-title">Active PO Status</div>
+              <div class="panel-sub" id="donutSub">Open purchase order book</div>
+            </div>
+          </div>
+          <div class="donut-wrap">
+            <div id="donut"></div>
+            <div class="donut-legend" id="donutLegend"></div>
+          </div>
+          <div class="hint">Click a status to filter the PO table</div>
+        </section>
+
+        <!-- Price index -->
+        <section class="card panel span-7" id="prices">
+          <div class="panel-head">
+            <div>
+              <div class="panel-title">Raw Material Price Index</div>
+              <div class="panel-sub">Indexed to 100 at period start · regional average</div>
+            </div>
+            <div class="legend" id="priceLegend"></div>
+          </div>
+          <div class="chart" id="priceChart"></div>
+          <table class="mini-table">
+            <thead><tr><th>Material</th><th>Category</th><th class="num">Latest</th><th class="num">Δ Period</th><th class="num">Δ 3M</th></tr></thead>
+            <tbody id="priceTable"></tbody>
+          </table>
+        </section>
+
+        <!-- Lead times -->
+        <section class="card panel span-5" id="suppliers">
+          <div class="panel-head">
+            <div>
+              <div class="panel-title">Supplier Lead Times</div>
+              <div class="panel-sub" id="ltSub">Current month · strategic suppliers</div>
+            </div>
+          </div>
+          <div class="lt-list" id="ltList"></div>
+          <div class="lt-legend">
+            <span><i class="swatch" style="background:var(--green-2)"></i> Within target</span>
+            <span><i class="swatch" style="background:var(--amber)"></i> ≤15% over</span>
+            <span><i class="swatch" style="background:var(--coral)"></i> &gt;15% over</span>
+            <span><i class="swatch" style="background:var(--navy-800);width:2px;height:12px;opacity:.6"></i> Category target</span>
+          </div>
+        </section>
+
+        <!-- Stockouts -->
+        <section class="card panel span-7" id="inventory">
+          <div class="panel-head">
+            <div>
+              <div class="panel-title">Inventory Stockouts by Category</div>
+              <div class="panel-sub">Stockout incidents per month (SKU-location level)</div>
+            </div>
+            <div class="legend" id="stockLegend"></div>
+          </div>
+          <div class="stat-row" id="stockStats"></div>
+          <div class="chart" id="stockChart"></div>
+        </section>
+
+        <!-- Alerts -->
+        <section class="card panel span-5" id="alerts">
+          <div class="panel-head">
+            <div>
+              <div class="panel-title">Procurement Alerts <span class="count-pill" id="alertCount">0</span></div>
+              <div class="panel-sub">Delays, risk signals & market movements</div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <div class="segmented sm" id="alertSeg">
+                <button data-s="all" class="active">All</button><button data-s="high">Critical</button>
+              </div>
+              <button class="btn btn-ghost" id="btnClearAlerts">Clear</button>
+            </div>
+          </div>
+          <div class="alert-list" id="alertList"></div>
+        </section>
+
+        <!-- PO table -->
+        <section class="card panel span-12" id="orders">
+          <div class="panel-head">
+            <div>
+              <div class="panel-title">Critical PO Monitor</div>
+              <div class="panel-sub" id="tSub">Purchase order status, delivery delays and supplier risk</div>
+            </div>
+            <div class="table-tools">
+              <div class="input-wrap">
+                <svg class="ic" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input class="input" id="tSearch" type="text" placeholder="Search PO, supplier, item…" autocomplete="off">
+              </div>
+              <select class="select sm" id="tStatus">
+                <option value="all">All Statuses</option>
+                <option>Delayed</option><option>At Risk</option><option>On Hold</option>
+                <option>In Transit</option><option>Open</option><option>Delivered</option>
+              </select>
+              <select class="select sm" id="tRisk">
+                <option value="all">All Risk Levels</option>
+                <option value="high">High (≥70)</option>
+                <option value="med">Medium (40–69)</option>
+                <option value="low">Low (&lt;40)</option>
+              </select>
+              <button class="btn" id="btnExport">
+                <svg class="ic" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export CSV</button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table class="data">
+              <thead id="tHead"></thead>
+              <tbody id="tBody"></tbody>
+            </table>
+          </div>
+          <div class="table-foot">
+            <div id="tInfo"></div>
+            <div class="pager" id="pager"></div>
+          </div>
+        </section>
+      </div>
+
+      <div class="footer">Harbourline Brands · Global Procurement & Supply Chain · Sample data for demonstration purposes · <span id="asOf"></span></div>
+    </div>
+  </main>
+</div>
+
+<div class="tooltip" id="tooltip"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+(() => {
+'use strict';
+
+/* ===================== Utilities ===================== */
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const sum = a => a.reduce((t, v) => t + v, 0);
+const avg = a => a.length ? sum(a) / a.length : 0;
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let _uid = 0; const uid = p => p + (++_uid);
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+const rand = mulberry32(20260915);
+function hash(s){let h=0;for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))|0;return Math.abs(h);}
+
+const fmtMoney = v => {
+  const a = Math.abs(v);
+  if (a >= 1e9) return '$' + (v/1e9).toFixed(2) + 'B';
+  if (a >= 1e6) return '$' + (v/1e6).toFixed(a >= 1e8 ? 0 : 1) + 'M';
+  if (a >= 1e3) return '$' + (v/1e3).toFixed(0) + 'K';
+  return '$' + v.toFixed(0);
+};
+const signed = (v, d=1) => (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v).toFixed(d);
+const fmtDate = d => d.toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'});
+const mLabel = d => d.toLocaleString('en-US', {month:'short'}) + " '" + String(d.getFullYear()).slice(2);
+function timeAgo(t){const s=Math.round((Date.now()-t)/1000);if(s<10)return'just now';if(s<60)return s+'s ago';const m=Math.round(s/60);if(m<60)return m+' min ago';const h=Math.floor(m/60);if(h<24)return h+'h '+(m%60)+'m ago';return Math.floor(h/24)+'d ago';}
+
+const ICON = {
+  dollar:'<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>',
+  users:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+  clock:'<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+  percent:'<line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/>',
+  po:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>',
+  risk:'<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
+  price:'<path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/>',
+  stock:'<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>',
+  lt:'<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+  truck:'<rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>',
+  check:'<polyline points="20 6 9 17 4 12"/>',
+  x:'<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>'
+};
+const icon = (k, style='') => `<svg class="ic" viewBox="0 0 24 24" style="${style}">${ICON[k]}</svg>`;
+
+/* ===================== Sample Data ===================== */
+const REGIONS = ['North America','APAC','EMEA'];
+const CATEGORIES = ['Packaging','Raw Ingredients','Logistics'];
+const REGION_CODE = {'North America':'NA','APAC':'APAC','EMEA':'EMEA'};
+const CAT_COLORS = {'Packaging':'#35598a','Raw Ingredients':'#2e6b4e','Logistics':'#b08d57'};
+const LT_TARGET = {'Packaging':21,'Raw Ingredients':30,'Logistics':7};
+
+const NOW = new Date();
+const TODAY = new Date(NOW.getFullYear(), NOW.getMonth(), NOW.getDate());
+const addDays = (d, n) => new Date(d.getTime() + n*864e5);
+const MONTHS = [];
+for (let i = 23; i >= 0; i--) MONTHS.push(new Date(NOW.getFullYear(), NOW.getMonth() - i, 1));
+
+// Monthly spend (USD M base)
+const SPEND_BASE = {
+  'North America': {'Packaging':4.2,'Raw Ingredients':7.8,'Logistics':3.1},
+  'APAC':          {'Packaging':3.6,'Raw Ingredients':6.9,'Logistics':2.8},
+  'EMEA':          {'Packaging':3.9,'Raw Ingredients':7.2,'Logistics':3.3}
+};
+const SPEND = {};
+REGIONS.forEach(r => { SPEND[r] = {}; CATEGORIES.forEach(c => {
+  const base = SPEND_BASE[r][c];
+  SPEND[r][c] = MONTHS.map((d, i) => {
+    const season = 1 + 0.08*Math.sin(((d.getMonth() + (c==='Logistics'?3:0))/12)*Math.PI*2);
+    return {
+      actual: base*season*(1+0.0045*i)*(0.93+rand()*0.14)*1e6,
+      budget: base*season*(1+0.0032*i)*1.01*1e6
+    };
+  });
+});});
+
+// Active supplier base counts
+const SUP_BASE = {
+  'North America': {'Packaging':38,'Raw Ingredients':54,'Logistics':22},
+  'APAC':          {'Packaging':46,'Raw Ingredients':61,'Logistics':29},
+  'EMEA':          {'Packaging':41,'Raw Ingredients':57,'Logistics':25}
+};
+const SUPCOUNT = {};
+REGIONS.forEach(r => { SUPCOUNT[r] = {}; CATEGORIES.forEach(c => {
+  let v = SUP_BASE[r][c] - 4 - rand()*3;
+  SUPCOUNT[r][c] = MONTHS.map(() => { v += (rand()-0.36)*1.3; return Math.max(5, Math.round(v)); });
+});});
+
+// Stockout incidents
+const STOCK_BASE = {'Packaging':9,'Raw Ingredients':12,'Logistics':5};
+const STOCK_REG = {'North America':0.85,'APAC':1.25,'EMEA':1};
+const STOCK = {};
+REGIONS.forEach(r => { STOCK[r] = {}; CATEGORIES.forEach(c => {
+  STOCK[r][c] = MONTHS.map(d => Math.round(STOCK_BASE[c]*STOCK_REG[r]*(0.55+rand()*0.85)*(1+0.18*Math.sin((d.getMonth()+1)/12*Math.PI*2))));
+});});
+
+// Raw material prices
+const MATERIALS = [
+  {name:'PET Resin',          cat:'Packaging',       unit:'$/t',   base:1180, vol:0.028, drift:0.004,  color:'#35598a'},
+  {name:'Corrugated Board',   cat:'Packaging',       unit:'$/t',   base:760,  vol:0.018, drift:-0.002, color:'#7f9cc4'},
+  {name:'Raw Sugar',          cat:'Raw Ingredients', unit:'$/t',   base:520,  vol:0.03,  drift:0.003,  color:'#2e6b4e'},
+  {name:'Cocoa Beans',        cat:'Raw Ingredients', unit:'$/t',   base:6900, vol:0.05,  drift:0.008,  color:'#8a5a3b'},
+  {name:'Palm Oil',           cat:'Raw Ingredients', unit:'$/t',   base:980,  vol:0.035, drift:0.002,  color:'#7ba88f'},
+  {name:'Diesel',             cat:'Logistics',       unit:'$/gal', base:3.85, vol:0.03,  drift:-0.001, color:'#c4553f'},
+  {name:'Ocean Freight (FEU)',cat:'Logistics',       unit:'$/FEU', base:2400, vol:0.06,  drift:0.006,  color:'#b08d57'}
+];
+const REG_PRICE = {'North America':1,'APAC':0.95,'EMEA':1.05};
+MATERIALS.forEach(m => {
+  m.series = {}; m.std = {};
+  REGIONS.forEach((r, ri) => {
+    let p = m.base*REG_PRICE[r];
+    const drift = m.drift + (ri-1)*0.0015;
+    m.series[r] = MONTHS.map((d, i) => { if (i > 0) p *= 1 + drift + (rand()-0.5)*2*m.vol; return p; });
+    m.std[r] = avg(m.series[r].slice(0, 12)); // FY standard cost
+  });
+});
+const fmtPrice = (v, m) => m.unit === '$/gal' ? '$' + v.toFixed(2) + '/gal' : '$' + Math.round(v).toLocaleString('en-US') + m.unit.slice(1);
+
+// Strategic suppliers
+const SUP_DEF = [
+  ['Pacific Polymers Ltd','APAC','Packaging'],['NordPack GmbH','EMEA','Packaging'],['Cascade Corrugated Inc.','North America','Packaging'],
+  ['Helix Flexible Films','APAC','Packaging'],['Orion Glass Works','EMEA','Packaging'],['Lakeshore Cartons Co.','North America','Packaging'],
+  ['Sunridge Sugar Co.','North America','Raw Ingredients'],['Gold Coast Cocoa Exporters','EMEA','Raw Ingredients'],['Golden Palm Oils Sdn Bhd','APAC','Raw Ingredients'],
+  ['Prairie Grain Millers','North America','Raw Ingredients'],['Alpine Dairy Solids AG','EMEA','Raw Ingredients'],['Mekong Starch & Sweeteners','APAC','Raw Ingredients'],
+  ['Verdant Flavors & Extracts','North America','Raw Ingredients'],['Rhine Valley Emulsifiers','EMEA','Raw Ingredients'],
+  ['Meridian Freight Partners','North America','Logistics'],['TransAtlas Logistics','EMEA','Logistics'],['Straits Ocean Lines','APAC','Logistics'],
+  ['Kestrel Road Haulage','EMEA','Logistics'],['Blue Harbor 3PL','North America','Logistics'],['Silk Route Carriers','APAC','Logistics'],
+  ['Coastal Coldchain Co.','APAC','Logistics']
+];
+const SUPPLIERS = SUP_DEF.map(([name, region, category], k) => {
+  const tgt = LT_TARGET[category];
+  const cur = tgt*(0.72 + rand()*0.72);
+  let v = cur*(0.8 + rand()*0.4);
+  const lt = [];
+  for (let i = 0; i < 24; i++) { lt.push(Math.max(1.5, v)); v += (cur - v)*0.18 + (rand()-0.5)*tgt*0.09; }
+  lt[23] = Math.max(1.5, cur);
+  const over = Math.max(0, cur/tgt - 1);
+  return {
+    id:k, name, region, category, lt,
+    onTime: clamp(Math.round(93 - over*45 + (rand()-0.5)*10), 62, 99),
+    risk: clamp(Math.round(18 + rand()*48 + over*85), 6, 95)
+  };
+});
+
+// Purchase orders
+const ITEMS = {
+  'Packaging':['PET Preforms 28mm','Corrugated Shipper Cases','BOPP Label Film','Glass Jars 450ml','Aluminium Foil Lids','Shrink Sleeve Film','Folding Cartons SBS'],
+  'Raw Ingredients':['Refined Sugar ICUMSA 45','Cocoa Liquor','RBD Palm Olein','Wheat Flour T55','Skimmed Milk Powder','Natural Vanilla Extract','Glucose Syrup DE42','Soy Lecithin'],
+  'Logistics':['FTL Lane Chicago–Dallas','FCL 40HC Shanghai–Rotterdam','Reefer Cold Chain Service','Cross-dock Handling','LTL Consolidation','Air Freight Expedite']
+};
+const VALUE_RANGE = {'Packaging':[18e3,420e3],'Raw Ingredients':[45e3,1.2e6],'Logistics':[6e3,180e3]};
+const STATUS_W = [['Delayed',.2],['At Risk',.16],['In Transit',.24],['Open',.18],['On Hold',.07],['Delivered',.15]];
+const STATUS_RANK = {'Delayed':5,'At Risk':4,'On Hold':3,'In Transit':2,'Open':1,'Delivered':0};
+const STATUS_ORDER = ['Delayed','At Risk','On Hold','In Transit','Open','Delivered'];
+const STATUS_COLOR = {'Delayed':'#c4553f','At Risk':'#b7791f','On Hold':'#6b5a8e','In Transit':'#35598a','Open':'#8593a8','Delivered':'#3f8a66'};
+const STATUS_CLASS = {'Delayed':'b-delayed','At Risk':'b-risk','In Transit':'b-transit','Open':'b-open','On Hold':'b-hold','Delivered':'b-delivered'};
+function pickW(arr){const x=rand();let acc=0;for(const [k,w] of arr){acc+=w;if(x<=acc)return k;}return arr[arr.length-1][0];}
+
+const POS = [];
+for (let i = 0; i < 76; i++) {
+  const s = SUPPLIERS[Math.floor(rand()*SUPPLIERS.length)];
+  const status = pickW(STATUS_W);
+  const items = ITEMS[s.category];
+  const vr = VALUE_RANGE[s.category];
+  const value = Math.round((vr[0] + Math.pow(rand(), 1.8)*(vr[1]-vr[0]))/100)*100;
+  let off, delay = 0;
+  switch (status) {
+    case 'Delayed':    off = -Math.round(1 + rand()*20); delay = -off; break;
+    case 'At Risk':    off = Math.round(rand()*7); break;
+    case 'In Transit': off = Math.round(1 + rand()*20); break;
+    case 'Open':       off = Math.round(10 + rand()*35); break;
+    case 'On Hold':    off = Math.round(-5 + rand()*30); delay = off < 0 ? -off : 0; break;
+    default:           off = -Math.round(1 + rand()*30); delay = rand() < .35 ? Math.round(1 + rand()*4) : 0;
+  }
+  const risk = clamp(Math.round(s.risk*0.55 + delay*2.4 + (status==='At Risk'?18:0) + (status==='On Hold'?12:0) + (status==='Delivered'?-15:0) + rand()*14), 3, 98);
+  POS.push({
+    id: 'PO-' + (4500218000 + i*137 + Math.floor(rand()*100)),
+    supplier: s.name, region: s.region, category: s.category,
+    item: items[Math.floor(rand()*items.length)],
+    value, due: addDays(TODAY, off), delay, status, risk
+  });
+}
+
+/* ===================== State ===================== */
+const state = {
+  region:'all', category:'all', period:12,
+  search:'', status:'all', risk:'all',
+  sortKey:'priority', sortDir:'desc', page:1, pageSize:8,
+  live:true, alertSev:'all', hiddenMats:new Set(), flashId:null
+};
+const liveAlerts = [];
+const dismissed = new Set();
+const renderedAlertKeys = new Set();
+const LOAD = Date.now();
+let lastSync = Date.now();
+
+const regs = () => state.region === 'all' ? REGIONS : [state.region];
+const cats = () => state.category === 'all' ? CATEGORIES : [state.category];
+const inScope = (r, c) => regs().includes(r) && cats().includes(c);
+const periodIdx = () => Array.from({length:state.period}, (_, k) => 24 - state.period + k);
+const prevIdx = () => Array.from({length:state.period}, (_, k) => 24 - 2*state.period + k);
+const filteredSuppliers = () => SUPPLIERS.filter(s => inScope(s.region, s.category));
+const priority = p => STATUS_RANK[p.status]*1000 + p.risk*5 + p.delay;
+
+function monthlySpend(i){let a=0,b=0;regs().forEach(r=>cats().forEach(c=>{a+=SPEND[r][c][i].actual;b+=SPEND[r][c][i].budget;}));return{a,b};}
+function monthlySup(i){let n=0;regs().forEach(r=>cats().forEach(c=>{n+=SUPCOUNT[r][c][i];}));return n;}
+function monthlyLT(i){const s=filteredSuppliers();return avg(s.map(x=>x.lt[i]));}
+function monthlyPPV(i){
+  let wSum=0, vSum=0;
+  cats().forEach(c => {
+    const w = regs().reduce((t, r) => t + SPEND[r][c][i].actual, 0);
+    const vals = [];
+    MATERIALS.filter(m => m.cat === c).forEach(m => regs().forEach(r => vals.push(m.series[r][i]/m.std[r] - 1)));
+    wSum += w; vSum += avg(vals)*w;
+  });
+  return wSum ? vSum/wSum*100 : 0;
+}
+
+/* ===================== Tooltip / Toast ===================== */
+const tip = $('#tooltip');
+function showTip(e, html){
+  tip.innerHTML = html; tip.style.opacity = 1;
+  const tw = tip.offsetWidth, th = tip.offsetHeight;
+  let left = e.clientX + 16, top = e.clientY - th - 12;
+  if (left + tw > window.innerWidth - 8) left = e.clientX - tw - 16;
+  if (top < 8) top = e.clientY + 18;
+  tip.style.transform = `translate(${left}px,${top}px)`;
+}
+const hideTip = () => { tip.style.opacity = 0; };
+let toastTimer;
+function toast(msg){
+  const t = $('#toast'); t.innerHTML = esc(msg); t.classList.add('show');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+/* ===================== Chart Primitives ===================== */
+function niceScale(min, max, ticks=5){
+  const range = (max - min) || 1;
+  const rough = range/(ticks - 1);
+  const mag = Math.pow(10, Math.floor(Math.log10(rough)));
+  const res = rough/mag;
+  const step = (res < 1.5 ? 1 : res < 3 ? 2 : res < 7 ? 5 : 10)*mag;
+  const lo = Math.floor(min/step)*step, hi = Math.ceil(max/step)*step;
+  const out = []; for (let v = lo; v <= hi + step/2; v += step) out.push(+v.toFixed(10));
+  return {lo, hi, ticks:out};
+}
+function smoothPath(pts){
+  if (pts.length < 3) return 'M' + pts.map(p => p.join(',')).join('L');
+  let d = `M${pts[0][0]},${pts[0][1]}`;
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0 = pts[i-1] || pts[i], p1 = pts[i], p2 = pts[i+1], p3 = pts[i+2] || p2, t = 0.16;
+    d += ` C${p1[0]+(p2[0]-p0[0])*t},${p1[1]+(p2[1]-p0[1])*t} ${p2[0]-(p3[0]-p1[0])*t},${p2[1]-(p3[1]-p1[1])*t} ${p2[0]},${p2[1]}`;
+  }
+  return d;
+}
+
+function lineChart(container, {labels, series, yFmt, height=270, zeroBase=false, animate=true}){
+  const W = Math.max(container.clientWidth, 260), H = height;
+  const pad = {l:56, r:14, t:12, b:30};
+  const iw = W - pad.l - pad.r, ih = H - pad.t - pad.b, n = labels.length;
+  const vis = series.filter(s => !s.hidden);
+  if (!vis.length) { container.innerHTML = `<div class="empty" style="height:${H}px">No series selected</div>`; return; }
+  const all = vis.flatMap(s => s.values);
+  let mn = Math.min(...all), mx = Math.max(...all);
+  const pv = (mx - mn)*0.1 || 1;
+  mn = zeroBase ? 0 : mn - pv; mx += pv;
+  const sc = niceScale(mn, mx, 5);
+  const x = i => pad.l + (n === 1 ? iw/2 : i*iw/(n-1));
+  const y = v => pad.t + ih - (v - sc.lo)/(sc.hi - sc.lo)*ih;
+  let svg = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}"><defs>`;
+  const gids = vis.map(s => { const g = uid('g'); if (s.area) svg += `<linearGradient id="${g}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${s.color}" stop-opacity=".18"/><stop offset="100%" stop-color="${s.color}" stop-opacity="0"/></linearGradient>`; return g; });
+  svg += `</defs>`;
+  sc.ticks.forEach(t => { svg += `<line x1="${pad.l}" x2="${W-pad.r}" y1="${y(t)}" y2="${y(t)}" stroke="#eef1f6"/><text class="axis-text" x="${pad.l-10}" y="${y(t)+4}" text-anchor="end">${yFmt(t)}</text>`; });
+  const step = Math.max(1, Math.ceil(n / Math.max(1, Math.floor(iw/62))));
+  labels.forEach((l, i) => { if (i % step === 0) svg += `<text class="axis-text" x="${x(i)}" y="${H-8}" text-anchor="middle">${l}</text>`; });
+  vis.forEach((s, k) => {
+    const pts = s.values.map((v, i) => [x(i), y(v)]);
+    const d = smoothPath(pts);
+    if (s.area) svg += `<path d="${d} L${x(n-1)},${pad.t+ih} L${x(0)},${pad.t+ih} Z" fill="url(#${gids[k]})"/>`;
+    svg += `<path class="${animate && !s.dash ? 'draw' : ''}" d="${d}" fill="none" stroke="${s.color}" stroke-width="${s.width||2.2}" stroke-linecap="round" ${s.dash ? `stroke-dasharray="${s.dash}"` : ''}/>`;
+  });
+  svg += `<g class="hov" style="opacity:0;pointer-events:none"><line class="guide" y1="${pad.t}" y2="${pad.t+ih}" stroke="#94a3b8" stroke-dasharray="3 3"/>`;
+  vis.forEach(s => svg += `<circle class="hdot" r="4.5" fill="#fff" stroke="${s.color}" stroke-width="2.2"/>`);
+  svg += `</g><rect class="zone" x="${pad.l}" y="${pad.t}" width="${iw}" height="${ih}" fill="transparent"/></svg>`;
+  container.innerHTML = svg;
+
+  const el = container.querySelector('svg'), hov = el.querySelector('.hov'), guide = el.querySelector('.guide'), dots = [...el.querySelectorAll('.hdot')];
+  const zone = el.querySelector('.zone');
+  zone.addEventListener('pointermove', e => {
+    const rect = el.getBoundingClientRect();
+    const px = (e.clientX - rect.left)*(W/rect.width);
+    const i = clamp(Math.round((px - pad.l)/(n > 1 ? iw/(n-1) : 1)), 0, n-1);
+    guide.setAttribute('x1', x(i)); guide.setAttribute('x2', x(i));
+    dots.forEach((d, k) => { d.setAttribute('cx', x(i)); d.setAttribute('cy', y(vis[k].values[i])); });
+    hov.style.opacity = 1;
+    showTip(e, `<div class="tt-title">${labels[i]}</div>` + vis.map(s => `<div class="tt-row"><span><i class="swatch" style="background:${s.color}"></i>${esc(s.name)}</span><b>${(s.fmt||yFmt)(s.values[i], i)}</b></div>`).join(''));
+  });
+  zone.addEventListener('pointerleave', () => { hov.style.opacity = 0; hideTip(); });
+}
+
+function stackedBars(container, {labels, stacks, height=240}){
+  const W = Math.max(container.clientWidth, 260), H = height;
+  const pad = {l:40, r:10, t:10, b:30};
+  const iw = W - pad.l - pad.r, ih = H - pad.t - pad.b, n = labels.length;
+  const totals = labels.map((_, i) => stacks.reduce((t, s) => t + s.values[i], 0));
+  const sc = niceScale(0, Math.max(...totals, 1)*1.08, 5);
+  const y = v => pad.t + ih - (v - sc.lo)/(sc.hi - sc.lo)*ih;
+  const band = iw/n, bw = Math.min(38, band*0.56);
+  let svg = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">`;
+  sc.ticks.forEach(t => { svg += `<line x1="${pad.l}" x2="${W-pad.r}" y1="${y(t)}" y2="${y(t)}" stroke="#eef1f6"/><text class="axis-text" x="${pad.l-8}" y="${y(t)+4}" text-anchor="end">${t}</text>`; });
+  labels.forEach((l, i) => {
+    const cx = pad.l + band*i + band/2;
+    svg += `<rect class="bandbg" data-i="${i}" x="${cx-band/2+2}" y="${pad.t}" width="${band-4}" height="${ih}" rx="6" fill="#f1f4f8" opacity="0"/>`;
+    svg += `<g class="bar-grow" style="animation-delay:${i*35}ms">`;
+    let acc = 0;
+    stacks.forEach((s, k) => {
+      const v = s.values[i]; if (!v) return;
+      const y1 = y(acc + v), y0 = y(acc);
+      svg += `<rect x="${cx-bw/2}" y="${y1}" width="${bw}" height="${Math.max(0, y0-y1-1)}" rx="${k===stacks.length-1?4:1.5}" fill="${s.color}"/>`;
+      acc += v;
+    });
+    svg += `</g>`;
+    if (i % Math.max(1, Math.ceil(n/Math.floor(iw/50))) === 0) svg += `<text class="axis-text" x="${cx}" y="${H-8}" text-anchor="middle">${l}</text>`;
+  });
+  labels.forEach((l, i) => { svg += `<rect class="hz" data-i="${i}" x="${pad.l+band*i}" y="${pad.t}" width="${band}" height="${ih}" fill="transparent"/>`; });
+  svg += `</svg>`;
+  container.innerHTML = svg;
+  const bgs = [...container.querySelectorAll('.bandbg')];
+  container.querySelectorAll('.hz').forEach(z => {
+    z.addEventListener('pointermove', e => {
+      const i = +z.dataset.i;
+      bgs.forEach((b, k) => b.setAttribute('opacity', k === i ? 1 : 0));
+      showTip(e, `<div class="tt-title">${labels[i]}</div>` + stacks.map(s => `<div class="tt-row"><span><i class="swatch" style="background:${s.color}"></i>${s.name}</span><b>${s.values[i]}</b></div>`).join('') + `<div class="tt-row" style="border-top:1px solid rgba(255,255,255,.12);margin-top:4px;padding-top:2px"><span>Total</span><b>${totals[i]}</b></div>`);
+    });
+    z.addEventListener('pointerleave', () => { bgs.forEach(b => b.setAttribute('opacity', 0)); hideTip(); });
+  });
+}
+
+function sparkline(values, color){
+  const W = 100, H = 38, n = values.length;
+  const mn = Math.min(...values), mx = Math.max(...values), r = (mx - mn) || 1;
+  const pts = values.map((v, i) => [(n === 1 ? 50 : i*W/(n-1)), H - 4 - (v - mn)/r*(H - 8)]);
+  const g = uid('sp');
+  const d = 'M' + pts.map(p => p[0].toFixed(2) + ',' + p[1].toFixed(2)).join('L');
+  return `<svg class="spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><defs><linearGradient id="${g}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${color}" stop-opacity=".2"/><stop offset="100%" stop-color="${color}" stop-opacity="0"/></linearGradient></defs><path d="${d} L${W},${H} L0,${H} Z" fill="url(#${g})"/><path d="${d}" fill="none" stroke="${color}" stroke-width="1.8" vector-effect="non-scaling-stroke" stroke-linejoin="round"/></svg>`;
+}
+
+/* ===================== Renderers ===================== */
+function renderHeader(){
+  const rl = state.region === 'all' ? 'All regions' : state.region;
+  const cl = state.category === 'all' ? 'All categories' : state.category;
+  $('#pageSub').textContent = `${rl} · ${cl} · Last ${state.period} months (${mLabel(MONTHS[24-state.period])} – ${mLabel(MONTHS[23])})`;
+  $('#asOf').textContent = 'Data as of ' + fmtDate(TODAY);
+}
+
+function chip(v, unit, cls){ return `<span class="delta ${cls}">${v >= 0 ? '▲' : '▼'} ${Math.abs(v).toFixed(1)}${unit}</span>`; }
+
+function renderKPIs(){
+  const P = state.period, cur = periodIdx(), prev = prevIdx();
+  const sp = cur.map(monthlySpend), spPrev = prev.map(monthlySpend);
+  const totA = sum(sp.map(x => x.a)), totB = sum(sp.map(x => x.b)), prevA = sum(spPrev.map(x => x.a));
+  const spendDelta = (totA/prevA - 1)*100, budVar = (totA/totB - 1)*100;
+
+  const supSeries = cur.map(monthlySup), supNow = supSeries[supSeries.length-1], supPrev = monthlySup(23 - P);
+  const ltSeries = cur.map(monthlyLT), ltNow = avg(ltSeries), ltPrev = avg(prev.map(monthlyLT));
+  const tgt = avg(filteredSuppliers().map(s => LT_TARGET[s.category]));
+  const ppvSeries = cur.map(monthlyPPV), ppv = avg(ppvSeries), ppvPrev = avg(prev.map(monthlyPPV));
+  const ppvCls = Math.abs(ppv) <= 2 ? 'good' : Math.abs(ppv) <= 5 ? 'warn' : 'bad';
+
+  const cards = [
+    {label:'Total Spend', icon:'dollar', tone:'tone-navy', value:fmtMoney(totA),
+     chip: chip(spendDelta, '%', Math.abs(spendDelta) < .05 ? 'neutral' : spendDelta > 0 ? 'warn' : 'good'),
+     note:`vs prior ${P}M · budget <b style="color:${budVar>0?'var(--coral)':'var(--green)'}">${signed(budVar)}%</b>`, spark:sp.map(x => x.a), color:'#1d3354'},
+    {label:'Active Suppliers', icon:'users', tone:'tone-green', value:supNow.toLocaleString('en-US'),
+     chip:`<span class="delta neutral">${supNow - supPrev >= 0 ? '▲' : '▼'} ${Math.abs(supNow - supPrev)}</span>`,
+     note:`net vs ${P}M ago · ${filteredSuppliers().length} strategic`, spark:supSeries, color:'#2e6b4e'},
+    {label:'Average Lead Time', icon:'clock', tone:'tone-amber', value:`${ltNow.toFixed(1)}<small>days</small>`,
+     chip: chip(ltNow - ltPrev, 'd', Math.abs(ltNow-ltPrev) < .05 ? 'neutral' : ltNow > ltPrev ? 'bad' : 'good'),
+     note:`vs prior ${P}M · target ${tgt.toFixed(1)}d`, spark:ltSeries, color:'#b7791f'},
+    {label:'Price Variance (PPV)', icon:'percent', tone:'tone-coral', value:`${signed(ppv)}<small>%</small>`,
+     chip:`<span class="delta ${ppvCls}">${ppv - ppvPrev >= 0 ? '▲' : '▼'} ${Math.abs(ppv - ppvPrev).toFixed(1)} pp</span>`,
+     note:`vs FY standard cost · tolerance ±2%`, spark:ppvSeries, color:'#c4553f'}
+  ];
+  $('#kpis').innerHTML = cards.map(c => `
+    <div class="card kpi">
+      <div class="kpi-top"><span class="kpi-label">${c.label}</span><span class="kpi-icon ${c.tone}">${icon(c.icon)}</span></div>
+      <div class="kpi-value">${c.value}</div>
+      <div class="kpi-foot">${c.chip}<span class="kpi-note">${c.note}</span></div>
+      ${sparkline(c.spark, c.color)}
+    </div>`).join('');
+}
+
+function renderSpend(animate=true){
+  const cur = periodIdx(), sp = cur.map(monthlySpend);
+  const totA = sum(sp.map(x => x.a)), totB = sum(sp.map(x => x.b)), v = totA - totB;
+  $('#spendStats').innerHTML = `
+    <div class="stat"><div class="l">Period Spend</div><div class="v">${fmtMoney(totA)}</div></div>
+    <div class="stat"><div class="l">Budget</div><div class="v">${fmtMoney(totB)}</div></div>
+    <div class="stat"><div class="l">Variance</div><div class="v ${v > 0 ? 'pos' : 'neg'}">${v > 0 ? '+' : '−'}${fmtMoney(Math.abs(v))} (${signed(v/totB*100)}%)</div></div>
+    <div class="stat"><div class="l">Monthly Avg</div><div class="v">${fmtMoney(totA/cur.length)}</div></div>`;
+  lineChart($('#spendChart'), {
+    labels: cur.map(i => mLabel(MONTHS[i])),
+    series: [
+      {name:'Actual', color:'#1d3354', values:sp.map(x => x.a), area:true, width:2.4},
+      {name:'Budget', color:'#b08d57', values:sp.map(x => x.b), dash:'6 5', width:2}
+    ],
+    yFmt: fmtMoney, height: 270, animate
+  });
+}
+
+function renderPrices(animate=true){
+  const cur = periodIdx(), R = regs(), start = cur[0];
+  const mats = MATERIALS.filter(m => cats().includes(m.cat));
+  $('#priceLegend').innerHTML = mats.map(m => `<button data-m="${esc(m.name)}" class="${state.hiddenMats.has(m.name) ? 'off' : ''}"><i class="swatch line" style="background:${m.color}"></i>${esc(m.name)}</button>`).join('');
+  const series = mats.map(m => {
+    const raw = cur.map(i => avg(R.map(r => m.series[r][i])));
+    const s0 = avg(R.map(r => m.series[r][start]));
+    return {name:m.name, color:m.color, values:raw.map(v => v/s0*100), hidden:state.hiddenMats.has(m.name),
+            fmt:(v, i) => `${v.toFixed(1)} <span style="color:#8a9ab3;font-weight:400">${fmtPrice(raw[i], m)}</span>`};
+  });
+  lineChart($('#priceChart'), {labels:cur.map(i => mLabel(MONTHS[i])), series, yFmt:v => v.toFixed(0), height:250, animate});
+  $('#priceTable').innerHTML = mats.map(m => {
+    const now = avg(R.map(r => m.series[r][23])), s0 = avg(R.map(r => m.series[r][start])), m3 = avg(R.map(r => m.series[r][20]));
+    const dp = (now/s0 - 1)*100, d3 = (now/m3 - 1)*100;
+    const col = v => v > 3 ? 'var(--coral)' : v < -3 ? 'var(--green)' : 'var(--muted)';
+    return `<tr><td><span class="mat"><i class="swatch" style="background:${m.color}"></i>${esc(m.name)}</span></td><td style="color:var(--muted)">${m.cat}</td><td class="num" style="color:var(--ink);font-weight:500">${fmtPrice(now, m)}</td><td class="num" style="color:${col(dp)};font-weight:600">${signed(dp)}%</td><td class="num" style="color:${col(d3)};font-weight:600">${signed(d3)}%</td></tr>`;
+  }).join('');
+}
+
+function renderLeadTimes(){
+  const list = filteredSuppliers().map(s => ({...s, cur:s.lt[23], tgt:LT_TARGET[s.category]})).sort((a, b) => (b.cur/b.tgt) - (a.cur/a.tgt));
+  const over = list.filter(s => s.cur > s.tgt).length;
+  $('#ltSub').textContent = `Current month · ${over} of ${list.length} suppliers above target · sorted by target ratio`;
+  const top = list.slice(0, 8);
+  const max = Math.max(...top.map(s => Math.max(s.cur, s.tgt)), 1)*1.12;
+  const el = $('#ltList');
+  if (!top.length) { el.innerHTML = '<div class="empty">No suppliers match the current filters</div>'; return; }
+  el.innerHTML = top.map(s => {
+    const ratio = s.cur/s.tgt;
+    const color = ratio <= 1 ? 'var(--green-2)' : ratio <= 1.15 ? 'var(--amber)' : 'var(--coral)';
+    return `<div class="lt-row" data-id="${s.id}">
+      <div class="lt-name" title="${esc(s.name)}">${esc(s.name)}<small>${REGION_CODE[s.region]} · ${s.category} · OTD ${s.onTime}%</small></div>
+      <div class="lt-track"><div class="lt-fill" data-w="${(s.cur/max*100).toFixed(2)}" style="background:${color}"></div><div class="lt-target" style="left:${(s.tgt/max*100).toFixed(2)}%"></div></div>
+      <div class="lt-val">${s.cur.toFixed(1)}<small> d</small></div></div>`;
+  }).join('');
+  requestAnimationFrame(() => requestAnimationFrame(() => el.querySelectorAll('.lt-fill').forEach(f => f.style.width = f.dataset.w + '%')));
+  el.querySelectorAll('.lt-row').forEach(row => {
+    const s = top.find(x => x.id === +row.dataset.id);
+    row.addEventListener('pointermove', e => showTip(e, `<div class="tt-title">${esc(s.name)}</div>
+      <div class="tt-row"><span>Lead time</span><b>${s.cur.toFixed(1)} days</b></div>
+      <div class="tt-row"><span>Target</span><b>${s.tgt} days</b></div>
+      <div class="tt-row"><span>12M avg</span><b>${avg(s.lt.slice(12)).toFixed(1)} days</b></div>
+      <div class="tt-row"><span>On-time delivery</span><b>${s.onTime}%</b></div>
+      <div class="tt-row"><span>Risk score</span><b>${s.risk}/100</b></div>`));
+    row.addEventListener('pointerleave', hideTip);
+  });
+}
+
+function renderStock(){
+  const cur = periodIdx(), R = regs(), C = cats();
+  const stacks = C.map(c => ({name:c, color:CAT_COLORS[c], values:cur.map(i => sum(R.map(r => STOCK[r][c][i])))}));
+  $('#stockLegend').innerHTML = C.map(c => `<span><i class="swatch" style="background:${CAT_COLORS[c]}"></i>${c}</span>`).join('');
+  const total = sum(stacks.map(s => sum(s.values)));
+  const last = sum(stacks.map(s => s.values[s.values.length-1]));
+  const prevLast = sum(stacks.map(s => s.values[s.values.length-2] || 0));
+  const worst = stacks.slice().sort((a, b) => sum(b.values) - sum(a.values))[0];
+  const ch = prevLast ? (last/prevLast - 1)*100 : 0;
+  $('#stockStats').innerHTML = `
+    <div class="stat"><div class="l">Period Incidents</div><div class="v">${total.toLocaleString('en-US')}</div></div>
+    <div class="stat"><div class="l">Last Month</div><div class="v">${last} <span style="font-size:12px" class="${ch > 0 ? 'pos' : 'neg'}">${signed(ch, 0)}% MoM</span></div></div>
+    <div class="stat"><div class="l">Most Affected</div><div class="v">${worst ? worst.name : '—'}</div></div>
+    <div class="stat"><div class="l">Avg / Month</div><div class="v">${(total/cur.length).toFixed(1)}</div></div>`;
+  stackedBars($('#stockChart'), {labels:cur.map(i => mLabel(MONTHS[i])), stacks, height:236});
+}
+
+function globalPOs(){ return POS.filter(p => inScope(p.region, p.category)); }
+
+function renderDonut(){
+  const rows = globalPOs();
+  const counts = STATUS_ORDER.map(s => ({s, n:rows.filter(p => p.status === s).length, v:sum(rows.filter(p => p.status === s).map(p => p.value))}));
+  const total = rows.length, totalVal = sum(rows.map(p => p.value));
+  const size = 176, r = 66, sw = 20, C = 2*Math.PI*r;
+  let acc = 0, segs = '';
+  counts.forEach(c => {
+    if (!c.n) return;
+    const len = c.n/total*C;
+    const dim = state.status !== 'all' && state.status !== c.s;
+    segs += `<circle class="donut-seg" data-s="${c.s}" cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${STATUS_COLOR[c.s]}" stroke-width="${sw}" stroke-dasharray="${Math.max(0, len-2)} ${C}" stroke-dashoffset="${-acc}" transform="rotate(-90 ${size/2} ${size/2})" opacity="${dim ? .25 : 1}"/>`;
+    acc += len;
+  });
+  $('#donut').innerHTML = `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+    <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="#eef1f6" stroke-width="${sw}"/>${segs}
+    <text x="${size/2}" y="${size/2-2}" text-anchor="middle" style="font-family:var(--serif);font-size:30px;font-weight:600;fill:var(--ink)">${total}</text>
+    <text x="${size/2}" y="${size/2+18}" text-anchor="middle" class="axis-text" style="fill:var(--muted)">POs · ${fmtMoney(totalVal)}</text></svg>`;
+  $('#donutSub').textContent = `${counts[0].n + counts[1].n} require attention · ${fmtMoney(counts[0].v + counts[1].v)} exposed`;
+  $('#donutLegend').innerHTML = counts.map(c => `<button class="dl-item ${state.status === c.s ? 'active' : ''}" data-s="${c.s}"><i class="swatch" style="background:${STATUS_COLOR[c.s]}"></i>${c.s}<b>${c.n}</b><em>${total ? Math.round(c.n/total*100) : 0}%</em></button>`).join('');
+  $$('#donut .donut-seg').forEach(seg => {
+    const c = counts.find(x => x.s === seg.dataset.s);
+    seg.addEventListener('pointermove', e => showTip(e, `<div class="tt-title">${c.s}</div><div class="tt-row"><span>Purchase orders</span><b>${c.n}</b></div><div class="tt-row"><span>Value</span><b>${fmtMoney(c.v)}</b></div>`));
+    seg.addEventListener('pointerleave', hideTip);
+    seg.addEventListener('click', () => setStatus(c.s));
+  });
+}
+
+/* ---------- Table ---------- */
+const COLS = [
+  {key:'id', label:'PO Number'}, {key:'supplier', label:'Supplier'}, {key:'region', label:'Region'},
+  {key:'item', label:'Item / Service'}, {key:'value', label:'PO Value', num:true}, {key:'due', label:'Due Date'},
+  {key:'delay', label:'Delay', num:true}, {key:'status', label:'Status'}, {key:'risk', label:'Risk Score'}
+];
+function tableRows(){
+  const q = state.search.trim().toLowerCase();
+  let rows = globalPOs().filter(p => {
+    if (state.status !== 'all' && p.status !== state.status) return false;
+    if (state.risk === 'high' && p.risk < 70) return false;
+    if (state.risk === 'med' && (p.risk < 40 || p.risk >= 70)) return false;
+    if (state.risk === 'low' && p.risk >= 40) return false;
+    if (q && ![p.id, p.supplier, p.item, p.region, p.category, p.status].some(f => f.toLowerCase().includes(q))) return false;
+    return true;
+  });
+  const k = state.sortKey, dir = state.sortDir === 'asc' ? 1 : -1;
+  rows.sort((a, b) => {
+    let va, vb;
+    if (k === 'priority') { va = priority(a); vb = priority(b); }
+    else if (k === 'status') { va = STATUS_RANK[a.status]; vb = STATUS_RANK[b.status]; }
+    else if (k === 'due') { va = a.due.getTime(); vb = b.due.getTime(); }
+    else { va = a[k]; vb = b[k]; }
+    if (typeof va === 'string') return va.localeCompare(vb)*dir;
+    return (va - vb)*dir;
+  });
+  return rows;
+}
+function renderTable(){
+  $('#tHead').innerHTML = '<tr>' + COLS.map(c => `<th data-key="${c.key}" class="${c.num ? 'num' : ''} ${state.sortKey === c.key ? 'sorted' : ''}">${c.label}<span class="sort">${state.sortKey === c.key ? (state.sortDir === 'asc' ? '▲' : '▼') : '↕'}</span></th>`).join('') + '</tr>';
+  const rows = tableRows();
+  const pages = Math.max(1, Math.ceil(rows.length/state.pageSize));
+  state.page = clamp(state.page, 1, pages);
+  const start = (state.page - 1)*state.pageSize;
+  const pageRows = rows.slice(start, start + state.pageSize);
+  const riskColor = v => v >= 70 ? 'var(--coral)' : v >= 40 ? 'var(--amber)' : 'var(--green-2)';
+  $('#tBody').innerHTML = pageRows.length ? pageRows.map(p => `
+    <tr class="${state.flashId === p.id ? 'flash' : ''}">
+      <td><span class="po-id">${p.id}</span></td>
+      <td><span class="sup">${esc(p.supplier)}</span><span class="sub-text">${p.category}</span></td>
+      <td><span class="region-tag">${REGION_CODE[p.region]}</span></td>
+      <td>${esc(p.item)}</td>
+      <td class="num" style="color:var(--ink);font-weight:500">${'$' + p.value.toLocaleString('en-US')}</td>
+      <td>${fmtDate(p.due)}</td>
+      <td class="num">${p.delay > 0 ? `<span class="delay-pos">+${p.delay}d</span>` : '<span class="delay-zero">—</span>'}</td>
+      <td><span class="badge ${STATUS_CLASS[p.status]}">${p.status}</span></td>
+      <td><div class="risk"><div class="risk-bar"><i style="width:${p.risk}%;background:${riskColor(p.risk)}"></i></div><b>${p.risk}</b></div></td>
+    </tr>`).join('') : `<tr><td colspan="${COLS.length}"><div class="empty">No purchase orders match your filters.</div></td></tr>`;
+  state.flashId = null;
+
+  const crit = rows.filter(p => p.status === 'Delayed' || p.risk >= 70).length;
+  $('#tInfo').innerHTML = rows.length
+    ? `Showing <b style="color:var(--ink)">${start+1}–${start+pageRows.length}</b> of <b style="color:var(--ink)">${rows.length}</b> POs · ${fmtMoney(sum(rows.map(p => p.value)))} value · <span style="color:var(--coral);font-weight:600">${crit} critical</span>`
+    : '0 results';
+  $('#tSub').textContent = `${globalPOs().filter(p => p.status === 'Delayed').length} delayed · ${globalPOs().filter(p => p.status === 'At Risk').length} at risk · sorted by ${state.sortKey === 'priority' ? 'criticality' : COLS.find(c => c.key === state.sortKey).label.toLowerCase()}`;
+
+  let pg = `<button data-pg="${state.page-1}" ${state.page === 1 ? 'disabled' : ''}>‹</button>`;
+  const from = Math.max(1, Math.min(state.page - 2, pages - 4)), to = Math.min(pages, from + 4);
+  for (let i = from; i <= to; i++) pg += `<button data-pg="${i}" class="${i === state.page ? 'active' : ''}">${i}</button>`;
+  pg += `<button data-pg="${state.page+1}" ${state.page === pages ? 'disabled' : ''}>›</button>`;
+  $('#pager').innerHTML = pg;
+}
+
+/* ---------- Alerts ---------- */
+function buildAlerts(){
+  const R = regs(), C = cats(), out = [];
+  POS.forEach(p => {
+    if (inScope(p.region, p.category) && p.status === 'Delayed' && p.delay >= 7)
+      out.push({key:'po-'+p.id, sev:p.delay >= 14 ? 'high' : 'med', type:'po', title:`${p.id} overdue by ${p.delay} days`, meta:`${p.supplier} · ${p.item} · ${fmtMoney(p.value)}`});
+  });
+  SUPPLIERS.forEach(s => {
+    if (!inScope(s.region, s.category)) return;
+    if (s.risk >= 72) out.push({key:'risk-'+s.id, sev:s.risk >= 82 ? 'high' : 'med', type:'risk', title:`Elevated supplier risk: ${s.name}`, meta:`Risk score ${s.risk}/100 · On-time ${s.onTime}% · ${REGION_CODE[s.region]}`});
+    const lt = s.lt[23], t = LT_TARGET[s.category];
+    if (lt > t*1.3) out.push({key:'lt-'+s.id, sev:'med', type:'lt', title:`Lead time breach: ${s.name}`, meta:`${lt.toFixed(1)} days vs ${t}-day target (+${Math.round((lt/t-1)*100)}%)`});
+  });
+  const scope = R.length === 3 ? 'Global' : REGION_CODE[R[0]];
+  MATERIALS.forEach(m => {
+    if (!C.includes(m.cat)) return;
+    const now = avg(R.map(r => m.series[r][23])), then = avg(R.map(r => m.series[r][20])), ch = now/then - 1;
+    if (ch > 0.05) out.push({key:'price-'+m.name+scope, sev:ch > 0.1 ? 'high' : 'med', type:'price', title:`Price spike: ${m.name} +${(ch*100).toFixed(1)}% in 3 months`, meta:`${m.cat} · now ${fmtPrice(now, m)} · ${scope}`});
+    else if (ch < -0.06) out.push({key:'price-'+m.name+scope, sev:'low', type:'price', title:`Buying window: ${m.name} ${(ch*100).toFixed(1)}% in 3 months`, meta:`${m.cat} · consider forward cover · ${scope}`});
+  });
+  R.forEach(r => C.forEach(c => {
+    const s = STOCK[r][c], n = s[23], base = avg(s.slice(20, 23));
+    if (n >= 6 && n > base*1.2) out.push({key:'stock-'+r+c, sev:n > base*1.5 ? 'high' : 'med', type:'stock', title:`Stockout surge: ${c} · ${REGION_CODE[r]}`, meta:`${n} incidents last month vs ${base.toFixed(1)} 3-month avg`});
+  }));
+  out.forEach(a => a.time = LOAD - (hash(a.key) % 540 + 6)*60000);
+  const rank = {high:0, med:1, low:2};
+  const base = out.sort((a, b) => rank[a.sev] - rank[b.sev] || b.time - a.time);
+  let all = [...liveAlerts.filter(a => inScope(a.region, a.category)), ...base].filter(a => !dismissed.has(a.key));
+  const total = all.length;
+  if (state.alertSev === 'high') all = all.filter(a => a.sev === 'high');
+  return {list:all.slice(0, 40), total, critical:[...liveAlerts.filter(a => inScope(a.region, a.category)), ...base].filter(a => !dismissed.has(a.key) && a.sev === 'high').length};
+}
+function renderAlerts(){
+  const {list, total, critical} = buildAlerts();
+  $('#alertCount').textContent = total;
+  $('#navAlertBadge').textContent = critical;
+  $('#bellDot').style.display = critical ? 'block' : 'none';
+  $('#alertList').innerHTML = list.length ? list.map(a => {
+    const isNew = a.live && Date.now() - a.time < 30000;
+    const enter = !renderedAlertKeys.has(a.key);
+    return `<div class="alert sev-${a.sev} ${enter ? 'enter' : ''}">
+      <div class="alert-ic">${icon(a.type in ICON ? a.type : 'po')}</div>
+      <div class="alert-body">
+        <div class="alert-title">${esc(a.title)}${isNew ? '<span class="new-tag">NEW</span>' : ''}</div>
+        <div class="alert-meta">${esc(a.meta)}</div>
+        <div class="alert-time" data-t="${a.time}">${timeAgo(a.time)}</div>
+      </div>
+      <button class="alert-x" data-key="${esc(a.key)}" aria-label="Dismiss">${icon('x')}</button>
+    </div>`;
+  }).join('') : '<div class="empty">All clear — no alerts for this view.</div>';
+  list.forEach(a => renderedAlertKeys.add(a.key));
+}
+
+/* ---------- Composite ---------- */
+function renderCharts(animate=true){ renderSpend(animate); renderPrices(animate); renderLeadTimes(); renderStock(); renderDonut(); }
+function renderAll(){ renderHeader(); renderKPIs(); renderCharts(); renderTable(); renderAlerts(); }
+
+/* ===================== Live Simulation ===================== */
+function tick(){
+  const pool = POS.filter(p => p.status !== 'Delivered');
+  if (!pool.length) return;
+  const p = pool[Math.floor(Math.random()*pool.length)];
+  let msg, sev = 'low', type = 'truck';
+  switch (p.status) {
+    case 'Open': p.status = 'In Transit'; msg = `${p.id} dispatched — now in transit`; break;
+    case 'In Transit':
+      if (Math.random() < .55) { p.status = 'Delivered'; p.risk = Math.max(3, p.risk - 20); msg = `${p.id} delivered · GRN posted`; type = 'check'; }
+      else { p.status = 'At Risk'; p.risk = Math.min(98, p.risk + 14); msg = `${p.id} flagged at risk — carrier ETA slipped`; sev = 'med'; type = 'risk'; }
+      break;
+    case 'At Risk':
+      p.status = 'Delayed'; p.delay = Math.max(1, p.delay + 1); p.due = addDays(TODAY, -p.delay);
+      p.risk = Math.min(98, p.risk + 10); msg = `${p.id} missed due date — now delayed`; sev = 'high'; type = 'po'; break;
+    case 'Delayed':
+      if (Math.random() < .4) { p.status = 'In Transit'; p.risk = Math.max(3, p.risk - 8); msg = `${p.id} recovered — shipment moving`; }
+      else { p.delay += 1; p.due = addDays(TODAY, -p.delay); p.risk = Math.min(98, p.risk + 4); msg = `${p.id} delay extended to ${p.delay} days`; sev = 'high'; type = 'po'; }
+      break;
+    case 'On Hold': p.status = 'Open'; p.risk = Math.max(3, p.risk - 10); msg = `${p.id} released from hold`; break;
+  }
+  liveAlerts.unshift({key:'live-' + Date.now() + '-' + p.id, live:true, sev, type, title:msg, meta:`${p.supplier} · ${p.item} · ${fmtMoney(p.value)}`, time:Date.now(), region:p.region, category:p.category});
+  if (liveAlerts.length > 15) liveAlerts.pop();
+  state.flashId = p.id;
+  lastSync = Date.now();
+  renderTable(); renderDonut(); renderAlerts();
+  if (sev === 'high' && inScope(p.region, p.category)) toast('⚠ ' + msg);
+}
+let liveTimer = setInterval(() => state.live && tick(), 7000);
+
+setInterval(() => {
+  $('#syncTime').textContent = 'Synced ' + timeAgo(lastSync) + ' · ' + POS.length + ' POs tracked';
+  $$('.alert-time').forEach(el => el.textContent = timeAgo(+el.dataset.t));
+}, 1000);
+
+/* ===================== Events ===================== */
+function onGlobalFilter(){ state.page = 1; renderAll(); }
+$('#fRegion').addEventListener('change', e => { state.region = e.target.value; onGlobalFilter(); });
+$('#fCategory').addEventListener('change', e => { state.category = e.target.value; state.hiddenMats.clear(); onGlobalFilter(); });
+$('#periodSeg').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  $$('#periodSeg button').forEach(x => x.classList.toggle('active', x === b));
+  state.period = +b.dataset.p; renderHeader(); renderKPIs(); renderCharts();
+});
+$('#btnReset').addEventListener('click', () => {
+  Object.assign(state, {region:'all', category:'all', period:12, search:'', status:'all', risk:'all', sortKey:'priority', sortDir:'desc', page:1, alertSev:'all'});
+  state.hiddenMats.clear();
+  $('#fRegion').value = 'all'; $('#fCategory').value = 'all'; $('#tSearch').value = ''; $('#topSearch').value = '';
+  $('#tStatus').value = 'all'; $('#tRisk').value = 'all';
+  $$('#periodSeg button').forEach(x => x.classList.toggle('active', x.dataset.p === '12'));
+  $$('#alertSeg button').forEach(x => x.classList.toggle('active', x.dataset.s === 'all'));
+  renderAll(); toast('Filters reset to global view');
+});
+$('#btnRefresh').addEventListener('click', e => {
+  const ic = e.currentTarget.querySelector('.ic'); ic.classList.remove('spin'); void ic.offsetWidth; ic.classList.add('spin');
+  lastSync = Date.now(); renderAll(); toast('Dashboard synced with ERP & supplier portal');
+});
+
+function setStatus(s){
+  state.status = state.status === s ? 'all' : s;
+  $('#tStatus').value = state.status; state.page = 1;
+  renderTable(); renderDonut();
+}
+$('#donutLegend').addEventListener('click', e => { const b = e.target.closest('.dl-item'); if (b) setStatus(b.dataset.s); });
+$('#priceLegend').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  const m = b.dataset.m; state.hiddenMats.has(m) ? state.hiddenMats.delete(m) : state.hiddenMats.add(m);
+  renderPrices(false);
+});
+
+let searchT;
+$('#tSearch').addEventListener('input', e => {
+  clearTimeout(searchT);
+  searchT = setTimeout(() => { state.search = e.target.value; $('#topSearch').value = e.target.value; state.page = 1; renderTable(); }, 150);
+});
+$('#topSearch').addEventListener('input', e => { state.search = e.target.value; $('#tSearch').value = e.target.value; state.page = 1; renderTable(); });
+$('#topSearch').addEventListener('keydown', e => { if (e.key === 'Enter') $('#orders').scrollIntoView({behavior:'smooth'}); });
+document.addEventListener('keydown', e => {
+  if (e.key === '/' && !['INPUT','SELECT','TEXTAREA'].includes(document.activeElement.tagName)) {
+    e.preventDefault(); (window.innerWidth > 900 ? $('#topSearch') : $('#tSearch')).focus();
+  }
+  if (e.key === 'Escape') { $('#profileMenu').classList.remove('open'); closeSidebar(); }
+});
+$('#tStatus').addEventListener('change', e => { state.status = e.target.value; state.page = 1; renderTable(); renderDonut(); });
+$('#tRisk').addEventListener('change', e => { state.risk = e.target.value; state.page = 1; renderTable(); });
+$('#tHead').addEventListener('click', e => {
+  const th = e.target.closest('th'); if (!th) return;
+  const k = th.dataset.key, col = COLS.find(c => c.key === k);
+  if (state.sortKey === k) state.sortDir = state.sortDir === 'asc' ? 'desc' : 'asc';
+  else { state.sortKey = k; state.sortDir = (col.num || k === 'risk' || k === 'status') ? 'desc' : 'asc'; }
+  renderTable();
+});
+$('#pager').addEventListener('click', e => { const b = e.target.closest('button'); if (b && !b.disabled) { state.page = +b.dataset.pg; renderTable(); } });
+
+function exportCSV(){
+  const rows = tableRows();
+  const head = ['PO Number','Supplier','Region','Category','Item','PO Value (USD)','Due Date','Delay (days)','Status','Risk Score'];
+  const q = v => `"${String(v).replace(/"/g, '""')}"`;
+  const csv = [head.map(q).join(','), ...rows.map(p => [p.id, p.supplier, p.region, p.category, p.item, p.value, p.due.toISOString().slice(0,10), p.delay, p.status, p.risk].map(q).join(','))].join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8'}));
+  a.download = `po_monitor_${TODAY.toISOString().slice(0,10)}.csv`;
+  document.body.appendChild(a); a.click(); a.remove();
+  toast(`Exported ${rows.length} purchase orders to CSV`);
+}
+$('#btnExport').addEventListener('click', exportCSV);
+
+$('#alertList').addEventListener('click', e => {
+  const b = e.target.closest('.alert-x'); if (!b) return;
+  dismissed.add(b.dataset.key); renderAlerts();
+});
+$('#btnClearAlerts').addEventListener('click', () => {
+  const {list} = buildAlerts(); list.forEach(a => dismissed.add(a.key));
+  renderAlerts(); toast(`${list.length} alerts acknowledged`);
+});
+$('#alertSeg').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  $$('#alertSeg button').forEach(x => x.classList.toggle('active', x === b));
+  state.alertSev = b.dataset.s; renderAlerts();
+});
+$('#bellBtn').addEventListener('click', () => $('#alerts').scrollIntoView({behavior:'smooth'}));
+
+$('#liveToggle').addEventListener('click', () => {
+  state.live = !state.live;
+  $('#liveDot').classList.toggle('paused', !state.live);
+  $('#liveLabel').textContent = state.live ? 'Live PO feed active' : 'Live feed paused';
+  $('#liveToggle').textContent = state.live ? 'Pause live updates' : 'Resume live updates';
+  toast(state.live ? 'Live updates resumed' : 'Live updates paused');
+});
+
+// Profile dropdown
+$('#profileBtn').addEventListener('click', e => { e.stopPropagation(); $('#profileMenu').classList.toggle('open'); });
+$('#profileMenu').addEventListener('click', e => { const b = e.target.closest('button[data-toast]'); if (b) { toast(b.dataset.toast); $('#profileMenu').classList.remove('open'); } });
+document.addEventListener('click', e => { if (!e.target.closest('.profile')) $('#profileMenu').classList.remove('open'); });
+
+// Sidebar navigation
+const sidebar = $('#sidebar'), overlay = $('#overlay');
+const closeSidebar = () => { sidebar.classList.remove('open'); overlay.classList.remove('show'); };
+$('#menuBtn').addEventListener('click', () => { sidebar.classList.add('open'); overlay.classList.add('show'); });
+overlay.addEventListener('click', closeSidebar);
+$('#nav').addEventListener('click', e => {
+  const b = e.target.closest('.nav-item'); if (!b) return;
+  if (b.dataset.action === 'export') { exportCSV(); closeSidebar(); return; }
+  if (b.dataset.action === 'settings') { toast('Settings are managed by Procurement Systems admin'); closeSidebar(); return; }
+  const t = document.getElementById(b.dataset.target);
+  if (b.dataset.target === 'top') window.scrollTo({top:0, behavior:'smooth'}); else if (t) t.scrollIntoView({behavior:'smooth'});
+  closeSidebar();
+});
+const spyTargets = ['top','spend','prices','suppliers','inventory','alerts','orders'];
+let spyT;
+window.addEventListener('scroll', () => {
+  clearTimeout(spyT);
+  spyT = setTimeout(() => {
+    let active = 'top';
+    const nearBottom = window.innerHeight + window.scrollY >= document.body.scrollHeight - 4;
+    if (nearBottom) active = 'orders';
+    else spyTargets.forEach(id => { const el = document.getElementById(id); if (el && el.getBoundingClientRect().top < 140) active = id; });
+    $$('.nav-item[data-target]').forEach(n => n.classList.toggle('active', n.dataset.target === active));
+  }, 60);
+}, {passive:true});
+
+// Responsive re-render
+let rzT, lastW = window.innerWidth;
+window.addEventListener('resize', () => {
+  clearTimeout(rzT);
+  rzT = setTimeout(() => {
+    if (Math.abs(window.innerWidth - lastW) < 2) return;
+    lastW = window.innerWidth;
+    renderSpend(false); renderPrices(false); renderStock();
+  }, 160);
+});
+
+/* ===================== Init ===================== */
+renderAll();
+window.addEventListener('load', () => { renderSpend(false); renderPrices(false); renderStock(); });
+})();
+</script>
+</body>
+</html>
